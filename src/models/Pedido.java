@@ -15,6 +15,18 @@ public class Pedido {
     private int cantidad;
     private LocalDate fecha;
 
+    public Pedido(int id, int usuarioId, int productoId, int cantidad, LocalDate fecha) {
+        this.id = id;
+        this.usuarioId = usuarioId;
+        this.productoId = productoId;
+        this.cantidad = cantidad;
+        this.fecha = fecha;
+    }
+
+    public Pedido() {
+
+    }
+
     // Getters y Setters con validación básica
     public int getId() {
         return id;
@@ -129,6 +141,7 @@ public class Pedido {
             throw e;
         } finally {
             conn.setAutoCommit(true);
+            ConnectionBD.closeConnection();
         }
     }
 
