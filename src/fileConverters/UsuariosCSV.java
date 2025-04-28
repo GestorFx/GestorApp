@@ -1,24 +1,25 @@
 package fileConverters;
 
-import connection.ConnectionBD;
+import services.ConnectionBD;
 import models.Usuario;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class UsuariosCSV {
 
     //Fill ArrayList with Usuario objects
-    public ArrayList<Usuario> getAllUsuarios() {
+    public ArrayList<Usuario> getAllUsuarios() throws SQLException {
         ArrayList<Usuario> misUsuarios = new ArrayList<>();
         String query = "SELECT * FROM Usuarios";
 
-        try (Statement stmt = ConnectionBD.getStmt();
+        Connection conn = ConnectionBD.getConn();
+        conn.setAutoCommit(false);
+
+        try (PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery(query)) {
 
             while (rs.next()) {
