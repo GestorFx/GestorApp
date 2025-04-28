@@ -217,7 +217,53 @@ public class Usuario {
         return null;
     }
 
+
     public static List<Usuario> findAll() throws SQLException {
+        List<Usuario> usuarios = new ArrayList<>();
+
+
+        String sql = "SELECT u.nombre, u.apellido, u.email, " +
+                "d.calle, d.ciudad, d.codigo_postal " +
+                "FROM Usuarios u " +
+                "LEFT JOIN Direcciones d ON u.id = d.usuario_id";
+
+        try (Statement stmt = ConnectionBD.getConn().createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                usuarios.add(fromResultSet(rs));
+            }
+        }
+
+        return usuarios;
+    }
+
+
+    private static Usuario fromResultSet(ResultSet rs) throws SQLException {
+        Usuario usuario = new Usuario();
+
+        usuario.setNombre(rs.getString("nombre"));
+        usuario.setApellido(rs.getString("apellido"));
+        usuario.setEmail(rs.getString("email"));
+
+
+        String calle = rs.getString("calle");
+        String ciudad = rs.getString("ciudad");
+        String codigoPostal = rs.getString("codigo_postal");
+
+        if (calle != null || ciudad != null || codigoPostal != null) {
+            Direccion direccion = new Direccion();
+            direccion.setCalle(calle);
+            direccion.setCiudad(ciudad);
+            direccion.setCodigoPostal(codigoPostal);
+            direccion.setUsuarioId(usuario.getId());
+            usuario.setDireccion(direccion);
+        }
+
+        return usuario;
+    }
+
+    /*public static List<Usuario> findAll() throws SQLException {
         List<Usuario> usuarios = new ArrayList<>();
         String sql = "SELECT * FROM Usuarios";
         try (Statement stmt = ConnectionBD.getConn().createStatement();
@@ -235,7 +281,7 @@ public class Usuario {
             ConnectionBD.closeConnection();
         }
         return usuarios;
-    }
+    }*/
 
     // equals, hashCode y toString
     @Override
