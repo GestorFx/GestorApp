@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:id="mainPane" prefWidth="750" prefHeight="410" style="-fx-background-color: #d9d9d9;">
+
+    <!-- LOGO -->
+    <ImageView layoutX="20" layoutY="20" fitWidth="60" fitHeight="60" pickOnBounds="true" preserveRatio="true" />
+
+    <!-- Tabs -->
+    <HBox layoutX="120" layoutY="20" spacing="10">
+        <ToggleButton text="Usuarios" selected="true" fx:id="usuariosBtn"/>
+        <ToggleButton text="Pedidos" fx:id="pedidosBtn"/>
+    </HBox>
+
+    <!-- Barra de búsqueda -->
+    <HBox layoutX="150" layoutY="80" spacing="10">
+        <Button text="≡" style="-fx-background-color: transparent; -fx-font-size: 16px;"/>
+        <TextField promptText="Buscar" prefWidth="400" style="-fx-background-color: #f3eaff;"/>
+        <Button text="🔍" style="-fx-background-color: transparent;"/>
+    </HBox>
+
+    <!-- Botones verticales -->
+    <VBox layoutX="20" layoutY="100" spacing="15">
+        <Button text="Insertar" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="Borrar" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="Modificar" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="CSV" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="XML" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+    </VBox>
+
+    <!-- Tabla -->
+    <TableView layoutX="150" layoutY="140" prefWidth="560" prefHeight="230">
+        <columns>
+            <TableColumn text="Nombre" prefWidth="80"/>
+            <TableColumn text="Apellidos" prefWidth="100"/>
+            <TableColumn text="Email" prefWidth="120"/>
+            <TableColumn text="Calle" prefWidth="80"/>
+            <TableColumn text="Ciudad" prefWidth="80"/>
+            <TableColumn text="CP" prefWidth="60"/>
+        </columns>
+    </TableView>
+</AnchorPane>

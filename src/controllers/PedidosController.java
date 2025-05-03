@@ -1,21 +1,21 @@
-package fileConverters;
+package controllers;
 
+import models.Producto;
+import models.Usuario;
 import services.ConnectionBD;
 import models.Pedido;
-import models.Usuario;
 
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.XMLEvent;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
-public class PedidosXML {
+public class PedidosController {
 
     //Fill ArrayList with Pedido objects
     public ArrayList<Pedido> getAllPedidos() throws SQLException {
@@ -49,7 +49,7 @@ public class PedidosXML {
     }
 
     //Export to XML the ArrayList with Pedido objects
-    private static void exportPedidosXML(ArrayList<Pedido> misPedidos){
+    private static void exportPedidosXML(List<Pedido> misPedidos){
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
         XMLEventFactory eventFactory = XMLEventFactory.newInstance();
 
@@ -93,6 +93,56 @@ public class PedidosXML {
                 writer.add(eventFactory.createEndElement("","","fecha"));
                 writer.add(eventFactory.createDTD("\n"));
 
+                writer.add(eventFactory.createStartElement("","","producto_nombre"));
+                ArrayList<Producto> misProductos = new ArrayList<>();
+                for (int i = 0; i <= misPedidos.size(); i++){
+                    misProductos.add(Producto.findById(i));
+                }
+                for (Producto producto:misProductos){
+                    if (producto.getId() == pedido.getId()){
+                        writer.add(eventFactory.createCharacters(String.valueOf(producto.getNombre())));
+                        writer.add(eventFactory.createEndElement("","","producto_nombre"));
+                        writer.add(eventFactory.createDTD("\n"));
+                    }
+                }
+
+                writer.add(eventFactory.createStartElement("","","producto_precio"));
+                for (int i = 0; i <= misPedidos.size(); i++){
+                    misProductos.add(Producto.findById(i));
+                }
+                for (Producto producto:misProductos){
+                    if (producto.getId() == pedido.getId()){
+                        writer.add(eventFactory.createCharacters(String.valueOf(producto.getPrecio())));
+                        writer.add(eventFactory.createEndElement("","","producto_precio"));
+                        writer.add(eventFactory.createDTD("\n"));
+                    }
+                }
+
+                writer.add(eventFactory.createStartElement("","","usuario_nombre"));
+                ArrayList<Usuario> misUsuarios = new ArrayList<>();
+                for (int i = 0; i <= misPedidos.size(); i++){
+                    misUsuarios.add(Usuario.findById(i));
+                }
+                for (Usuario usuario:misUsuarios){
+                    if (usuario.getId() == pedido.getId()){
+                        writer.add(eventFactory.createCharacters(String.valueOf(usuario.getNombre())));
+                        writer.add(eventFactory.createEndElement("","","usuario_nombre"));
+                        writer.add(eventFactory.createDTD("\n"));
+                    }
+                }
+
+                writer.add(eventFactory.createStartElement("","","usuario_apellido"));
+                for (int i = 0; i <= misPedidos.size(); i++){
+                    misUsuarios.add(Usuario.findById(i));
+                }
+                for (Usuario usuario:misUsuarios){
+                    if (usuario.getId() == pedido.getId()){
+                        writer.add(eventFactory.createCharacters(String.valueOf(usuario.getApellido())));
+                        writer.add(eventFactory.createEndElement("","","usuario_apellido"));
+                        writer.add(eventFactory.createDTD("\n"));
+                    }
+                }
+
                 writer.add(eventFactory.createEndElement("","","pedido"));
                 writer.add(eventFactory.createDTD("\n"));
             }
@@ -106,6 +156,8 @@ public class PedidosXML {
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
