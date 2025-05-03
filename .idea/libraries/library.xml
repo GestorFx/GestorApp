@@ -3,9 +3,11 @@
     <CLASSES>
       <root url="file://$PROJECT_DIR$/library" />
       <root url="jar://$PROJECT_DIR$/../OneDrive/Escritorio/TEMARIO/ACCESO A DATOS/mysql-connector-java-5.0.8-bin.jar!/" />
+      <root url="file://$PROJECT_DIR$/../../../javafx-sdk-23/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
+    <jarDirectory url="file://$PROJECT_DIR$/../../../javafx-sdk-23/lib" recursive="false" />
     <jarDirectory url="file://$PROJECT_DIR$/library" recursive="false" />
   </library>
 </component>
