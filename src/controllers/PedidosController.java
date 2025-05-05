@@ -34,9 +34,11 @@ public class PedidosController {
                         rs.getInt("usuario_id"),
                         rs.getInt("producto_id"),
                         rs.getInt("cantidad"),
-
-                        //Change type of date in the Constructor
-                        rs.getDate("fecha").toLocalDate()
+                        rs.getDate("fecha").toLocalDate(),
+                        rs.getString("producto_nombre"),
+                        rs.getDouble("producto_precio"),
+                        rs.getString("usuario_nombre"),
+                        rs.getString("usuario_apellido")
                 );
                 misPedidos.add(pedido);
             }
