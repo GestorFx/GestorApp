@@ -4,45 +4,48 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:id="mainPane" prefWidth="750" prefHeight="410" style="-fx-background-color: #d9d9d9;">
+
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.MainController" fx:id="mainPane" prefWidth="750" prefHeight="410" style="-fx-background-color: #d9d9d9;">
 
     <!-- LOGO -->
-    <ImageView layoutX="20" layoutY="20" fitWidth="60" fitHeight="60" pickOnBounds="true" preserveRatio="true" />
+    <ImageView layoutX="20" layoutY="20" fitWidth="60" fitHeight="60" pickOnBounds="true" preserveRatio="true"/>
 
     <!-- Tabs -->
     <HBox layoutX="120" layoutY="20" spacing="10">
-        <ToggleButton fx:id="usuariosBtn" text="Usuarios" />
+        <ToggleButton fx:id="usuariosBtn" text="Usuarios"/>
         <ToggleButton fx:id="pedidosBtn" text="Pedidos" selected="true"/>
     </HBox>
 
     <!-- Barra de búsqueda -->
     <HBox layoutX="150" layoutY="80" spacing="10">
         <Button text="≡" style="-fx-background-color: transparent; -fx-font-size: 16px;"/>
-        <TextField promptText="Buscar" prefWidth="400" style="-fx-background-color: #f3eaff;"/>
-        <Button text="🔍" style="-fx-background-color: transparent;"/>
+        <TextField promptText="Buscar" fx:id="searchField" prefWidth="400" style="-fx-background-color: #f3eaff;"/>
+        <Button text="🔍" fx:id="searchBtn" style="-fx-background-color: transparent;"/>
     </HBox>
 
-    <!-- Botones verticales -->
+    <!-- Botones de acción -->
     <VBox layoutX="20" layoutY="100" spacing="15">
-        <Button text="Insertar" styleClass="button" prefWidth="100"/>
-        <Button text="Borrar" styleClass="button" prefWidth="100"/>
-        <Button text="Modificar" styleClass="button" prefWidth="100"/>
-        <Button text="CSV" styleClass="button" prefWidth="100"/>
-        <Button text="XML" styleClass="button" prefWidth="100"/>
+        <Button text="Insertar" fx:id="insertBtn" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="Borrar" fx:id="deleteBtn" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="Modificar" fx:id="updateBtn" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="CSV" fx:id="exportCSVBtn" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
+        <Button text="XML" fx:id="exportXMLBtn" style="-fx-background-color: #007BFF; -fx-text-fill: white;" prefWidth="100"/>
     </VBox>
 
     <!-- Tabla de Pedidos -->
-    <TableView fx:id="tablaPedidos" layoutX="150" layoutY="140" prefWidth="580" prefHeight="230">
+    <TableView fx:id="tablaDatos" layoutX="150" layoutY="140" prefWidth="580" prefHeight="230">
         <columns>
-            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
-            <TableColumn fx:id="colUsuarioId" text="Usuario ID" prefWidth="80"/>
-            <TableColumn fx:id="colProductoId" text="Producto ID" prefWidth="80"/>
-            <TableColumn fx:id="colCantidad" text="Cantidad" prefWidth="70"/>
+            <TableColumn fx:id="colPedidoId" text="Pedido ID" prefWidth="80"/>
+            <TableColumn fx:id="colUsuarioId" text="Usuario ID" prefWidth="100"/>
+            <TableColumn fx:id="colProductoId" text="Producto ID" prefWidth="100"/>
+            <TableColumn fx:id="colCantidad" text="Cantidad" prefWidth="80"/>
             <TableColumn fx:id="colFecha" text="Fecha" prefWidth="100"/>
-            <TableColumn fx:id="colProductoNombre" text="Producto" prefWidth="100"/>
+            <TableColumn fx:id="colProductoNombre" text="Producto" prefWidth="120"/>
             <TableColumn fx:id="colProductoPrecio" text="Precio" prefWidth="80"/>
             <TableColumn fx:id="colUsuarioNombre" text="Nombre Usuario" prefWidth="120"/>
             <TableColumn fx:id="colUsuarioApellido" text="Apellido Usuario" prefWidth="120"/>
+
         </columns>
     </TableView>
+
 </AnchorPane>
