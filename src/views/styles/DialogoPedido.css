@@ -1,0 +1,194 @@
+/* DialogoPedido.css */
+
+* {
+    -neon-blue: #00e6ff;
+    -neon-blue-glow: rgba(0, 230, 255, 0.5);
+    -dark-bg: #050e18;
+    -medium-bg: #0a1a2e;
+    -light-bg: #112240;
+    -text-color: white;
+    -highlight-color: #00b8cc;
+    -error-color: #ff6b6b;
+}
+
+.dialog-pane {
+    -fx-background-color: -medium-bg;
+    -fx-padding: 25px;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 15, 0.2, 0, 0);
+}
+
+.dialog-pane .label {
+    -fx-text-fill: -neon-blue;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+/* Estilos base para campos de entrada */
+.dialog-pane .text-field,
+.dialog-pane .combo-box,
+.dialog-pane .date-picker {
+    -fx-background-color: -light-bg; /* Aplicado al fondo general del control donde sea posible */
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-font-size: 13px;
+    -fx-pref-width: 250px; /* ANCHO PREFERIDO UNIFICADO */
+}
+
+/* Estilos para el texto y padding dentro de los campos */
+.dialog-pane .text-field, /* Para TextField directamente */
+.dialog-pane .combo-box > .list-cell, /* Para la celda visible del ComboBox */
+.dialog-pane .combo-box > .arrow-button, /* Para el botón de flecha del ComboBox */
+.dialog-pane .date-picker > .text-field { /* Para el campo de texto del DatePicker */
+    -fx-text-fill: -text-color;
+    -fx-prompt-text-fill: derive(-text-color, -40%);
+    -fx-padding: 8px 10px; /* Padding interno */
+    -fx-highlight-fill: -highlight-color;
+}
+
+/* Ajuste específico para el fondo del campo de texto del DatePicker y ComboBox si es necesario */
+.dialog-pane .date-picker > .text-field,
+.dialog-pane .combo-box > .list-cell { /* La celda que muestra el valor seleccionado */
+    -fx-background-color: -light-bg; /* Asegura que el fondo interno sea el correcto */
+}
+.dialog-pane .combo-box > .arrow-button {
+    -fx-background-color: -light-bg;
+}
+
+
+/* Estilos de foco */
+.dialog-pane .text-field:focused,
+.dialog-pane .combo-box:focused,
+.dialog-pane .date-picker:focused,
+.dialog-pane .date-picker > .text-field:focused { /* También para el text-field interno del datepicker */
+    -fx-border-color: -highlight-color;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 8, 0.3, 0, 0);
+}
+
+/* Estilos para ComboBox (popup y flecha) */
+.dialog-pane .combo-box .list-cell { /* Celdas en el desplegable */
+    -fx-background-color: -light-bg;
+    -fx-text-fill: -text-color;
+    -fx-padding: 8px 10px;
+    -fx-font-size: 13px;
+}
+
+.dialog-pane .combo-box .list-cell:hover {
+    -fx-background-color: derive(-light-bg, 20%);
+}
+
+.dialog-pane .combo-box .list-cell:filled:selected,
+.dialog-pane .combo-box .list-cell:filled:selected:hover {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+}
+
+.dialog-pane .combo-box-popup .list-view {
+    -fx-background-color: -light-bg;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+    -fx-background-radius: 0 0 5px 5px;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 8, 0.2, 0, 0);
+}
+
+.dialog-pane .combo-box .arrow-button .arrow {
+    -fx-background-color: -neon-blue;
+}
+
+/* Estilos para DatePicker (popup y flecha) */
+.dialog-pane .date-picker .arrow-button {
+    -fx-background-color: -light-bg; /* Para que el botón de flecha tenga el mismo fondo */
+    -fx-background-radius: 0 5px 5px 0;
+}
+
+.dialog-pane .date-picker .arrow-button .arrow {
+    -fx-background-color: -neon-blue;
+}
+
+.dialog-pane .date-picker-popup {
+    -fx-background-color: -medium-bg;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 8, 0.2, 0, 0);
+}
+
+.dialog-pane .date-picker-popup .month-year-pane {
+    -fx-background-color: -light-bg;
+    -fx-padding: 5px;
+}
+
+.dialog-pane .date-picker-popup .month-year-pane .label {
+    -fx-text-fill: -text-color;
+}
+
+.dialog-pane .date-picker-popup .spinner .button .left-arrow,
+.dialog-pane .date-picker-popup .spinner .button .right-arrow {
+    -fx-background-color: -neon-blue;
+}
+
+.dialog-pane .date-picker-popup .calendar-grid {
+    -fx-background-color: -medium-bg;
+}
+
+.dialog-pane .date-picker-popup .day-cell {
+    -fx-background-color: -medium-bg;
+    -fx-text-fill: -text-color;
+    -fx-border-color: transparent;
+    -fx-font-size: 12px;
+    -fx-padding: 5px;
+}
+
+.dialog-pane .date-picker-popup .day-cell:hover {
+    -fx-background-color: -light-bg;
+}
+
+.dialog-pane .date-picker-popup .day-cell.selected {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+}
+
+.dialog-pane .date-picker-popup .day-cell.today {
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+}
+
+.dialog-pane .date-picker-popup .week-number-cell {
+    -fx-text-fill: derive(-text-color, -30%);
+}
+
+/* Estilos de Botones */
+.dialog-pane .button {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 5;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .action-button {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 5, 0.3, 0, 0);
+}
+
+.dialog-pane .action-button:hover {
+    -fx-background-color: derive(-neon-blue, -15%);
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 10, 0.5, 0, 0);
+}
+
+.dialog-pane .action-button-cancel {
+    -fx-background-color: -light-bg;
+    -fx-text-fill: -text-color;
+    -fx-border-color: -text-color;
+    -fx-border-width: 1px;
+}
+
+.dialog-pane .action-button-cancel:hover {
+    -fx-background-color: derive(-light-bg, -10%);
+    -fx-border-color: -neon-blue;
+    -fx-text-fill: -neon-blue;
+}

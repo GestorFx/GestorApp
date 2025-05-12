@@ -1,9 +1,8 @@
 package controllers;
 
+import models.Pedido;
 import models.Producto;
 import models.Usuario;
-import services.ConnectionBD;
-import models.Pedido;
 
 import javax.xml.stream.XMLEventFactory;
 import javax.xml.stream.XMLEventWriter;
@@ -11,155 +10,108 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PedidosController {
 
-    //Fill ArrayList with Pedido objects
-    public ArrayList<Pedido> getAllPedidos() throws SQLException {
-        ArrayList<Pedido> misPedidos = new ArrayList<>();
-        String query = "SELECT * FROM Pedidos";
-
-        Connection conn = ConnectionBD.getConn();
-        conn.setAutoCommit(false);
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)){
-             ResultSet rs = stmt.executeQuery(query);
-
-            while (rs.next()) {
-                Pedido pedido = new Pedido(
-                        rs.getInt("id"),
-                        rs.getInt("usuario_id"),
-                        rs.getInt("producto_id"),
-                        rs.getInt("cantidad"),
-
-                        //Change type of date in the Constructor
-                        rs.getDate("fecha").toLocalDate()
-                );
-                misPedidos.add(pedido);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return misPedidos;
+    public List<Pedido> getAllPedidos() throws SQLException {
+        return Pedido.findAll();
     }
 
-    //Export to XML the ArrayList with Pedido objects
-    private static void exportPedidosXML(List<Pedido> misPedidos){
+    public Pedido getPedidoById(int id) throws SQLException {
+        return Pedido.findById(id);
+    }
+
+    public void crearPedido(Pedido pedido) throws SQLException {
+        if (pedido == null) throw new IllegalArgumentException("El pedido no puede ser nulo.");
+        pedido.save();
+    }
+
+    public void modificarPedido(Pedido pedido) throws SQLException {
+        if (pedido == null) throw new IllegalArgumentException("El pedido a modificar no puede ser nulo.");
+        if (Pedido.findById(pedido.getId()) == null) {
+            throw new SQLException("Pedido con ID " + pedido.getId() + " no encontrado para modificar.");
+        }
+        pedido.save();
+    }
+
+    public void borrarPedido(int pedidoId) throws SQLException {
+        Pedido pedido = Pedido.findById(pedidoId);
+        if (pedido != null) {
+            pedido.delete();
+        } else {
+            throw new SQLException("Pedido con ID " + pedidoId + " no encontrado para borrar.");
+        }
+    }
+
+    public List<Pedido> buscarPedidos(String criterio) throws SQLException {
+        String critLower = criterio.toLowerCase().trim();
+        if (critLower.isEmpty()) return getAllPedidos();
+        return Pedido.findAll().stream()
+                .filter(p -> String.valueOf(p.getId()).equals(critLower) ||
+                        (p.getProductoNombre() != null && p.getProductoNombre().toLowerCase().contains(critLower)) ||
+                        (p.getUsuarioNombreCompleto() != null && p.getUsuarioNombreCompleto().toLowerCase().contains(critLower)) ||
+                        (p.getFecha() != null && p.getFecha().toString().contains(critLower)))
+                .collect(Collectors.toList());
+    }
+
+    public void exportPedidosToXML(List<Pedido> pedidos, String filePath) throws XMLStreamException, FileNotFoundException, SQLException {
+        if (pedidos == null || pedidos.isEmpty()) {
+            System.out.println("No hay pedidos para exportar.");
+            return;
+        }
+
         XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
         XMLEventFactory eventFactory = XMLEventFactory.newInstance();
+        XMLEventWriter writer = null;
 
         try {
-            XMLEventWriter writer = xmlOutputFactory.createXMLEventWriter(new FileOutputStream("pedidos.xml"));
-
-            //Every element starts this way
-            writer.add(eventFactory.createStartDocument());
+            writer = xmlOutputFactory.createXMLEventWriter(new FileOutputStream(filePath), "UTF-8");
+            writer.add(eventFactory.createStartDocument("UTF-8", "1.0"));
             writer.add(eventFactory.createDTD("\n"));
-
             writer.add(eventFactory.createStartElement("", "", "pedidos"));
             writer.add(eventFactory.createDTD("\n"));
 
-            //For every pedido in the database
-            for (Pedido pedido:misPedidos){
-                writer.add(eventFactory.createStartElement("","","pedido"));
+            for (Pedido pedido : pedidos) {
+                writer.add(eventFactory.createDTD("\t"));
+                writer.add(eventFactory.createStartElement("", "", "pedido"));
                 writer.add(eventFactory.createDTD("\n"));
 
-                writer.add(eventFactory.createStartElement("","","id"));
-                writer.add(eventFactory.createCharacters(String.valueOf(pedido.getId())));
-                writer.add(eventFactory.createEndElement("","","id"));
-                writer.add(eventFactory.createDTD("\n"));
+                createXmlElement(writer, eventFactory, "id", String.valueOf(pedido.getId()), 2);
+                createXmlElement(writer, eventFactory, "usuario_id", String.valueOf(pedido.getUsuarioId()), 2);
+                createXmlElement(writer, eventFactory, "producto_id", String.valueOf(pedido.getProductoId()), 2);
+                createXmlElement(writer, eventFactory, "cantidad", String.valueOf(pedido.getCantidad()), 2);
+                createXmlElement(writer, eventFactory, "fecha", pedido.getFecha().toString(), 2);
+                createXmlElement(writer, eventFactory, "producto_nombre", pedido.getProductoNombre(), 2);
+                createXmlElement(writer, eventFactory, "producto_precio", String.valueOf(pedido.getProductoPrecio()), 2);
+                createXmlElement(writer, eventFactory, "usuario_nombre_completo", pedido.getUsuarioNombreCompleto(), 2);
 
-                writer.add(eventFactory.createStartElement("","","usuario_id"));
-                writer.add(eventFactory.createCharacters(String.valueOf(pedido.getUsuarioId())));
-                writer.add(eventFactory.createEndElement("","","usuario_id"));
-                writer.add(eventFactory.createDTD("\n"));
-
-                writer.add(eventFactory.createStartElement("","","producto_id"));
-                writer.add(eventFactory.createCharacters(String.valueOf(pedido.getProductoId())));
-                writer.add(eventFactory.createEndElement("","","producto_id"));
-                writer.add(eventFactory.createDTD("\n"));
-
-                writer.add(eventFactory.createStartElement("","","cantidad"));
-                writer.add(eventFactory.createCharacters(String.valueOf(pedido.getCantidad())));
-                writer.add(eventFactory.createEndElement("","","cantidad"));
-                writer.add(eventFactory.createDTD("\n"));
-
-                writer.add(eventFactory.createStartElement("","","fecha"));
-                writer.add(eventFactory.createCharacters(String.valueOf(pedido.getFecha())));
-                writer.add(eventFactory.createEndElement("","","fecha"));
-                writer.add(eventFactory.createDTD("\n"));
-
-                writer.add(eventFactory.createStartElement("","","producto_nombre"));
-                ArrayList<Producto> misProductos = new ArrayList<>();
-                for (int i = 0; i <= misPedidos.size(); i++){
-                    misProductos.add(Producto.findById(i));
-                }
-                for (Producto producto:misProductos){
-                    if (producto.getId() == pedido.getId()){
-                        writer.add(eventFactory.createCharacters(String.valueOf(producto.getNombre())));
-                        writer.add(eventFactory.createEndElement("","","producto_nombre"));
-                        writer.add(eventFactory.createDTD("\n"));
-                    }
-                }
-
-                writer.add(eventFactory.createStartElement("","","producto_precio"));
-                for (int i = 0; i <= misPedidos.size(); i++){
-                    misProductos.add(Producto.findById(i));
-                }
-                for (Producto producto:misProductos){
-                    if (producto.getId() == pedido.getId()){
-                        writer.add(eventFactory.createCharacters(String.valueOf(producto.getPrecio())));
-                        writer.add(eventFactory.createEndElement("","","producto_precio"));
-                        writer.add(eventFactory.createDTD("\n"));
-                    }
-                }
-
-                writer.add(eventFactory.createStartElement("","","usuario_nombre"));
-                ArrayList<Usuario> misUsuarios = new ArrayList<>();
-                for (int i = 0; i <= misPedidos.size(); i++){
-                    misUsuarios.add(Usuario.findById(i));
-                }
-                for (Usuario usuario:misUsuarios){
-                    if (usuario.getId() == pedido.getId()){
-                        writer.add(eventFactory.createCharacters(String.valueOf(usuario.getNombre())));
-                        writer.add(eventFactory.createEndElement("","","usuario_nombre"));
-                        writer.add(eventFactory.createDTD("\n"));
-                    }
-                }
-
-                writer.add(eventFactory.createStartElement("","","usuario_apellido"));
-                for (int i = 0; i <= misPedidos.size(); i++){
-                    misUsuarios.add(Usuario.findById(i));
-                }
-                for (Usuario usuario:misUsuarios){
-                    if (usuario.getId() == pedido.getId()){
-                        writer.add(eventFactory.createCharacters(String.valueOf(usuario.getApellido())));
-                        writer.add(eventFactory.createEndElement("","","usuario_apellido"));
-                        writer.add(eventFactory.createDTD("\n"));
-                    }
-                }
-
-                writer.add(eventFactory.createEndElement("","","pedido"));
+                writer.add(eventFactory.createDTD("\t"));
+                writer.add(eventFactory.createEndElement("", "", "pedido"));
                 writer.add(eventFactory.createDTD("\n"));
             }
 
-            //All elements end this way
-            writer.add(eventFactory.createEndElement("","","pedidos"));
+            writer.add(eventFactory.createEndElement("", "", "pedidos"));
+            writer.add(eventFactory.createDTD("\n"));
             writer.add(eventFactory.createEndDocument());
-            writer.flush();
-            writer.close();
-
-        } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        } finally {
+            if (writer != null) {
+                writer.flush();
+                writer.close();
+            }
         }
     }
 
+    private void createXmlElement(XMLEventWriter writer, XMLEventFactory eventFactory, String elementName, String value, int indentLevel) throws XMLStreamException {
+        String indent = "\t".repeat(indentLevel);
+        writer.add(eventFactory.createDTD(indent));
+        writer.add(eventFactory.createStartElement("", "", elementName));
+        if (value != null) {
+            writer.add(eventFactory.createCharacters(value));
+        }
+        writer.add(eventFactory.createEndElement("", "", elementName));
+        writer.add(eventFactory.createDTD("\n"));
+    }
 }

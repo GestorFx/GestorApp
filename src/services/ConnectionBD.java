@@ -1,66 +1,78 @@
 package services;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConnectionBD {
-    private static final String URL = "jdbc:mysql://localhost:3306/tienda";
-    private static final String USER = "root";
-    private static final String PASSWORD = "";
-    private static Connection conn = null;
+    private static final String HOST = "localhost";
+    private static final String PORT = "3306";
+    private static final String DATABASE_NAME = "tienda";
 
-    // Constructor privado para evitar instanciación
-    private ConnectionBD() {}
+    private static final String URL_DB_BASE = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DATABASE_NAME;
 
-    /**
-     * Establece una conexión a la base de datos
-     * @return Connection objeto de conexión
-     * @throws SQLException si ocurre un error al conectar
-     */
-    public static Connection getConn() throws SQLException {
-        if (conn == null || conn.isClosed()) {
-            try {
-                // Registrar el driver (opcional desde JDBC 4.0)
-                Class.forName("com.mysql.jdbc.Driver");
+    private static final String USER_DB = "root";
+    private static final String PASSWORD_DB = "";
 
-                // Establecer conexión con parámetros adicionales
-                String connectionURL = URL + "?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
-                conn = DriverManager.getConnection(connectionURL, USER, PASSWORD);
-                conn.setAutoCommit(true); // Por defecto autocommit=true
-            } catch (ClassNotFoundException e) {
-                throw new SQLException("MySQL JDBC Driver no encontrado", e);
-            }
+    static {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            System.out.println("INFO: Driver MySQL JDBC cargado exitosamente.");
+        } catch (ClassNotFoundException e) {
+            System.err.println("ERROR CRÍTICO: Driver MySQL JDBC no encontrado. Asegúrate de que el JAR del conector MySQL está en el classpath.");
+            Logger.getLogger(ConnectionBD.class.getName()).log(Level.SEVERE, "Driver MySQL JDBC no encontrado", e);
+            throw new RuntimeException("Driver MySQL JDBC no encontrado, la aplicación no puede continuar.", e);
         }
-        return conn;
     }
 
-    /**
-     * Cierra la conexión a la base de datos
-     */
-    public static void closeConnection() {
+    private ConnectionBD() {}
+
+    public static Connection getConn() throws SQLException {
+        String connectionUrl = URL_DB_BASE +
+                "?useSSL=false" +
+                "&serverTimezone=UTC" +
+                "&allowPublicKeyRetrieval=true" +
+                "&useUnicode=true" +
+                "&characterEncoding=UTF-8";
+
+        System.out.println("INFO: ConnectionBD.getConn() - Solicitando NUEVA conexión a: " + connectionUrl);
+        Connection nuevaConexion = DriverManager.getConnection(connectionUrl, USER_DB, PASSWORD_DB);
+        System.out.println("INFO: ConnectionBD.getConn() - NUEVA conexión establecida. AutoCommit por defecto: " + nuevaConexion.getAutoCommit());
+        return nuevaConexion;
+    }
+
+    public static void closeQuietly(ResultSet rs, Statement stmt, Connection conn) {
+        if (rs != null) {
+            try {
+                rs.close();
+            } catch (SQLException e) {
+                Logger.getLogger(ConnectionBD.class.getName()).log(Level.WARNING, "Error al cerrar ResultSet", e);
+            }
+        }
+        if (stmt != null) {
+            try {
+                stmt.close();
+            } catch (SQLException e) {
+                Logger.getLogger(ConnectionBD.class.getName()).log(Level.WARNING, "Error al cerrar Statement", e);
+            }
+        }
         if (conn != null) {
             try {
                 if (!conn.isClosed()) {
                     conn.close();
+                    System.out.println("INFO: ConnectionBD.closeQuietly() - Conexión cerrada.");
                 }
-            } catch (SQLException ex) {
-                Logger.getLogger(ConnectionBD.class.getName())
-                        .log(Level.SEVERE, "Error al cerrar la conexión", ex);
-            } finally {
-                conn = null;
+            } catch (SQLException e) {
+                Logger.getLogger(ConnectionBD.class.getName()).log(Level.WARNING, "Error al cerrar Connection", e);
             }
         }
     }
 
-
-    public static void closeResources(ResultSet rs, Statement stmt) {
-        try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(ConnectionBD.class.getName())
-                    .log(Level.SEVERE, "Error al cerrar recursos", ex);
-        }
+    public static void closeQuietly(ResultSet rs, Statement stmt) {
+        closeQuietly(rs, stmt, null);
     }
 }

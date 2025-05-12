@@ -1,0 +1,270 @@
+* {
+    -neon-blue: #00e6ff;
+    -neon-blue-glow: rgba(0, 230, 255, 0.5);
+    -logo-glow-color: rgba(0, 230, 255, 0.6);
+    -dark-bg: #050e18;
+    -medium-bg: #0a1a2e;
+    -light-bg: #112240;
+    -text-color: white;
+    -highlight-color: #00b8cc;
+}
+
+#mainPane {
+    -fx-background-color: linear-gradient(to bottom, -dark-bg, -medium-bg);
+    -fx-font-family: "Arial";
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-border-radius: 0;
+}
+
+.root {
+    -fx-background-color: -dark-bg;
+    -fx-background-radius: 0;
+    -fx-background-insets: 0;
+}
+
+.top-accent {
+    -fx-background-color: -neon-blue;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 10, 0.6, 0, 0);
+}
+
+.header-container {
+    -fx-min-height: 50px;
+    -fx-pref-height: 70px;
+    -fx-padding: 5 0;
+    -fx-alignment: center;
+}
+
+.logo-text {
+    -fx-font-family: -futuristic-font;
+    -fx-font-weight: 900;
+    -fx-font-size: 42px;
+    -fx-text-fill: -neon-blue;
+    -fx-effect: dropshadow(gaussian, -logo-glow-color, 20, 0.65, 0, 0);
+    -fx-padding: 5 10px;
+    -fx-letter-spacing: 2px;
+}
+
+.tab-container {
+    -fx-spacing: 20px;
+    -fx-padding: 0 0 10 0;
+}
+
+.tab-button {
+    -fx-background-color: -light-bg;
+    -fx-text-fill: -text-color;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-background-radius: 20;
+    -fx-padding: 8 20;
+    -fx-border-radius: 20;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 5, 0, 0, 0);
+    -fx-min-width: 100px;
+    -fx-pref-width: 120px;
+}
+
+.tab-button:selected {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 10, 0.6, 0, 0);
+}
+
+.tab-button:hover {
+    -fx-background-color: derive(-light-bg, 20%);
+    -fx-cursor: hand;
+}
+
+.tab-button:selected:hover {
+    -fx-background-color: derive(-neon-blue, -10%);
+}
+
+.action-buttons-container {
+}
+
+.action-button {
+    -fx-background-color: -light-bg;
+    -fx-text-fill: -text-color;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 5;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-padding: 12 22px;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 5, 0, 0, 0);
+    -fx-min-width: 110px;
+}
+
+.action-button:hover {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 10, 0.7, 0, 0);
+    -fx-cursor: hand;
+}
+
+.search-bar {
+    -fx-background-color: -light-bg;
+    -fx-background-radius: 25;
+    -fx-border-color: -neon-blue;
+    -fx-border-radius: 25;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 5, 0, 0, 0);
+    -fx-min-height: 40px;
+    -fx-spacing: 10px;
+    -fx-padding: 0 15 0 15;
+    -fx-max-width: Infinity;
+    -fx-pref-width: 100%;
+}
+
+.menu-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -neon-blue;
+    -fx-font-size: 16px;
+    -fx-cursor: hand;
+    -fx-min-width: 30px;
+    -fx-max-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-height: 30px;
+}
+
+.search-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -text-color;
+    -fx-prompt-text-fill: derive(-text-color, -40%);
+    -fx-highlight-fill: -neon-blue;
+    -fx-padding: 5 10;
+}
+
+.search-button {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+    -fx-background-radius: 50%;
+    -fx-min-width: 30px;
+    -fx-min-height: 30px;
+    -fx-max-width: 30px;
+    -fx-max-height: 30px;
+    -fx-cursor: hand;
+}
+
+.search-button:hover {
+    -fx-background-color: derive(-neon-blue, -10%);
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 10, 0.7, 0, 0);
+}
+
+.table-container {
+    -fx-background-color: transparent;
+    -fx-spacing: 15;
+}
+
+.data-table {
+    -fx-background-color: -light-bg;
+    -fx-background-radius: 10;
+    -fx-table-cell-border-color: transparent;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 5, 0, 0, 0);
+}
+
+.data-table .column-header-background {
+    -fx-background-color: -neon-blue;
+    -fx-background-radius: 8 8 0 0;
+}
+
+.data-table .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.data-table .column-header .label {
+    -fx-text-fill: -dark-bg;
+    -fx-font-weight: bold;
+    -fx-font-size: 11px;
+    -fx-alignment: center-left;
+    -fx-padding: 5 10 5 10;
+}
+
+.data-table .column-header-background .filler,
+.data-table .corner {
+    -fx-background-color: -neon-blue;
+}
+
+.data-table .table-row-cell {
+    -fx-background-color: -medium-bg;
+    -fx-text-fill: -text-color;
+    -fx-border-color: transparent;
+}
+
+.data-table .table-row-cell:odd {
+    -fx-background-color: derive(-medium-bg, 10%);
+}
+
+.data-table .table-row-cell:selected {
+    -fx-background-color: rgba(0, 230, 255, 0.3);
+    -fx-table-cell-border-color: -neon-blue;
+}
+
+.data-table .table-cell {
+    -fx-text-fill: -text-color;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent;
+    -fx-padding: 5 10;
+}
+
+.scroll-bar:vertical,
+.scroll-bar:horizontal {
+    -fx-background-color: -medium-bg;
+}
+
+.scroll-bar:vertical .thumb,
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: -neon-blue;
+    -fx-background-radius: 5;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+}
+
+@media screen and (max-width: 768px) {
+    .logo-text {
+        -fx-font-size: 32px;
+    }
+    .tab-button {
+        -fx-font-size: 10px;
+        -fx-padding: 6 15;
+        -fx-min-width: 90px;
+    }
+    .action-button {
+        -fx-font-size: 11px;
+        -fx-padding: 10 18px;
+    }
+    .data-table .column-header .label {
+        -fx-font-size: 10px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .logo-text {
+        -fx-font-size: 24px;
+    }
+    .tab-container {
+        -fx-spacing: 10px;
+    }
+    .tab-button {
+        -fx-padding: 5 10;
+        -fx-min-width: 70px;
+    }
+    .action-buttons-container {
+        -fx-spacing: 5px;
+    }
+    .action-button {
+        -fx-font-size: 10px;
+        -fx-padding: 8 12px;
+    }
+}

@@ -10,100 +10,104 @@ public class Producto {
     private int id;
     private String nombre;
     private double precio;
+    // private int stock;
     private int categoriaId;
-    private Categoria categoria; // Relación opcional
+    private String categoriaNombre;
 
-    // Getters y Setters con validación
-    public int getId() {
-        return id;
-    }
+    public Producto() {}
 
-    public void setId(int id) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID no puede ser negativo");
-        }
+    public Producto(int id, String nombre, double precio, int categoriaId) {
         this.id = id;
+        setNombre(nombre);
+        setPrecio(precio);
+        // setStock(stock);
+        setCategoriaId(categoriaId);
     }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public int getId() { return id; }
+    public String getNombre() { return nombre; }
+    public double getPrecio() { return precio; }
+    // public int getStock() { return stock; }
+    public int getCategoriaId() { return categoriaId; }
+    public String getCategoriaNombre() { return categoriaNombre; }
+
+    public void setId(int id) { this.id = id; }
 
     public void setNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nombre no puede estar vacío");
+            throw new IllegalArgumentException("El nombre del producto no puede estar vacío.");
         }
         this.nombre = nombre.trim();
     }
 
-    public double getPrecio() {
-        return precio;
-    }
-
     public void setPrecio(double precio) {
         if (precio < 0) {
-            throw new IllegalArgumentException("Precio no puede ser negativo");
+            throw new IllegalArgumentException("El precio no puede ser negativo.");
         }
         this.precio = precio;
     }
 
-    public int getCategoriaId() {
-        return categoriaId;
-    }
+    // public void setStock(int stock) {
+    //     if (stock < 0) {
+    //         throw new IllegalArgumentException("El stock no puede ser negativo.");
+    //     }
+    //     this.stock = stock;
+    // }
 
     public void setCategoriaId(int categoriaId) {
-        if (categoriaId <= 0) {
-            throw new IllegalArgumentException("ID de categoría no válido");
-        }
         this.categoriaId = categoriaId;
     }
 
-    public Categoria getCategoria() throws SQLException {
-        if (categoria == null && categoriaId > 0) {
-            this.categoria = Categoria.findById(categoriaId);
-        }
-        return categoria;
+    public void setCategoriaNombre(String categoriaNombre) {
+        this.categoriaNombre = categoriaNombre;
     }
 
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-        if (categoria != null) {
-            this.categoriaId = categoria.getId();
-        }
-    }
-
-    // Métodos de persistencia
     public void save() throws SQLException {
-        Connection conn = ConnectionBD.getConn();
-        conn.setAutoCommit(false);
+        Connection conn = null;
+        boolean originalAutoCommit = true;
         try {
-            save(conn);
+            conn = ConnectionBD.getConn();
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+
+            if (this.categoriaId > 0) {
+                Categoria categoriaExistente = Categoria.findById(this.categoriaId);
+                if (categoriaExistente == null) {
+                    throw new SQLException("La categoría con ID " + this.categoriaId + " no existe.");
+                }
+            }
+
+            if (this.id == 0) {
+                insert(conn);
+            } else {
+                update(conn);
+            }
             conn.commit();
         } catch (SQLException e) {
-            conn.rollback();
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
             throw e;
         } finally {
-            conn.setAutoCommit(true);
-            ConnectionBD.closeConnection();
-        }
-    }
-
-    public void save(Connection conn) throws SQLException {
-        if (id == 0) {
-            insert(conn);
-        } else {
-            update(conn);
+            if (conn != null) {
+                try { conn.setAutoCommit(originalAutoCommit); } catch (SQLException ex) { ex.printStackTrace(); }
+                try { conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
         }
     }
 
     private void insert(Connection conn) throws SQLException {
         String sql = "INSERT INTO Productos (nombre, precio, categoria_id) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, nombre);
-            stmt.setDouble(2, precio);
-            stmt.setInt(3, categoriaId);
+            stmt.setString(1, this.nombre);
+            stmt.setDouble(2, this.precio);
+            // stmt.setInt(3, this.stock);
+            if (this.categoriaId > 0) {
+                stmt.setInt(3, this.categoriaId);
+            } else {
+                stmt.setNull(3, Types.INTEGER);
+            }
             stmt.executeUpdate();
-
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     this.id = rs.getInt(1);
@@ -115,105 +119,91 @@ public class Producto {
     private void update(Connection conn) throws SQLException {
         String sql = "UPDATE Productos SET nombre = ?, precio = ?, categoria_id = ? WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nombre);
-            stmt.setDouble(2, precio);
-            stmt.setInt(3, categoriaId);
-            stmt.setInt(4, id);
+            stmt.setString(1, this.nombre);
+            stmt.setDouble(2, this.precio);
+            // stmt.setInt(3, this.stock);
+            if (this.categoriaId > 0) {
+                stmt.setInt(3, this.categoriaId);
+            } else {
+                stmt.setNull(3, Types.INTEGER);
+            }
+            stmt.setInt(4, this.id);
             stmt.executeUpdate();
         }
     }
 
     public void delete() throws SQLException {
-        Connection conn = ConnectionBD.getConn();
-        conn.setAutoCommit(false);
+        Connection conn = null;
+        boolean originalAutoCommit = true;
+        if (this.id == 0) throw new IllegalStateException("ID de producto no válido para borrar.");
         try {
-            delete(conn);
+            conn = ConnectionBD.getConn();
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+
+            Pedido.deleteByProductoId(conn, this.id);
+
+            String sql = "DELETE FROM Productos WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, this.id);
+                stmt.executeUpdate();
+            }
             conn.commit();
         } catch (SQLException e) {
-            conn.rollback();
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            }
             throw e;
         } finally {
-            conn.setAutoCommit(true);
-            ConnectionBD.closeConnection();
-        }
-    }
-
-    public void delete(Connection conn) throws SQLException {
-        // Primero verificar si hay pedidos asociados
-        if (tienePedidosAsociados(conn)) {
-            throw new SQLException("No se puede eliminar el producto porque tiene pedidos asociados");
-        }
-
-        String sql = "DELETE FROM Productos WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        }
-    }
-
-    private boolean tienePedidosAsociados(Connection conn) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Pedidos WHERE producto_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
+            if (conn != null) {
+                try { conn.setAutoCommit(originalAutoCommit); } catch (SQLException ex) { ex.printStackTrace(); }
+                try { conn.close(); } catch (SQLException ex) { ex.printStackTrace(); }
             }
         }
-        return false;
     }
 
-    // Métodos estáticos de consulta
     public static Producto findById(int id) throws SQLException {
-        String sql = "SELECT p.*, c.nombre as categoria_nombre FROM Productos p " +
-                "LEFT JOIN Categorias c ON p.categoria_id = c.id " +
-                "WHERE p.id = ?";
-        try (PreparedStatement stmt = ConnectionBD.getConn().prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return fromResultSet(rs);
-                }
-            }
-        }
-        finally {
-            ConnectionBD.closeConnection();
-        }
-        return null;
-    }
+        String sql = "SELECT p.id, p.nombre, p.precio, p.categoria_id, c.nombre as nombre_categoria " +
+                "FROM Productos p " +
+                "LEFT JOIN Categorias c ON p.categoria_id = c.id WHERE p.id = ?";
+        Producto producto = null;
+        System.out.println("DEBUG: Producto.findById(" + id + ") - Iniciando búsqueda.");
 
-    public static List<Producto> findByCategoriaId(int categoriaId) throws SQLException {
-        List<Producto> productos = new ArrayList<>();
-        String sql = "SELECT p.*, c.nombre as categoria_nombre FROM Productos p " +
-                "LEFT JOIN Categorias c ON p.categoria_id = c.id " +
-                "WHERE p.categoria_id = ?";
-        try (PreparedStatement stmt = ConnectionBD.getConn().prepareStatement(sql)) {
-            stmt.setInt(1, categoriaId);
+        try (Connection conn = ConnectionBD.getConn();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            System.out.println("DEBUG: Producto.findById(" + id + ") - Conexión obtenida ("+ conn.hashCode() +"), Statement preparado.");
+            stmt.setInt(1, id);
+
             try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    productos.add(fromResultSet(rs));
+                System.out.println("DEBUG: Producto.findById(" + id + ") - Query ejecutada, procesando ResultSet.");
+                if (rs.next()) {
+                    producto = fromResultSet(rs);
+                    System.out.println("DEBUG: Producto.findById(" + id + ") - Producto ENCONTRADO: " + producto.getNombre());
+                } else {
+                    System.out.println("DEBUG: Producto.findById(" + id + ") - Producto NO encontrado.");
                 }
             }
         }
-        finally {
-            ConnectionBD.closeConnection();
+        catch (SQLException e) {
+            System.err.println("ERROR: Producto.findById(" + id + ") - SQLException: " + e.getMessage());
+            // e.printStackTrace();
+            throw e;
         }
-        return productos;
+        System.out.println("DEBUG: Producto.findById(" + id + ") - Finalizado. Producto devuelto: " + (producto != null ? producto.getNombre() : "null"));
+        return producto;
     }
 
     public static List<Producto> findAll() throws SQLException {
         List<Producto> productos = new ArrayList<>();
-        String sql = "SELECT p.*, c.nombre as categoria_nombre FROM Productos p " +
-                "LEFT JOIN Categorias c ON p.categoria_id = c.id";
-        try (Statement stmt = ConnectionBD.getConn().createStatement();
+        String sql = "SELECT p.*, c.nombre as nombre_categoria FROM Productos p " +
+                "LEFT JOIN Categorias c ON p.categoria_id = c.id ORDER BY p.nombre ASC";
+        try (Connection conn = ConnectionBD.getConn();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 productos.add(fromResultSet(rs));
             }
-        }
-        finally {
-            ConnectionBD.closeConnection();
         }
         return productos;
     }
@@ -223,20 +213,69 @@ public class Producto {
         producto.setId(rs.getInt("id"));
         producto.setNombre(rs.getString("nombre"));
         producto.setPrecio(rs.getDouble("precio"));
-        producto.setCategoriaId(rs.getInt("categoria_id"));
+        // producto.setStock(rs.getInt("stock"));
 
-        // Cargar categoría si existe
-        if (rs.getString("categoria_nombre") != null) {
-            Categoria categoria = new Categoria();
-            categoria.setId(rs.getInt("categoria_id"));
-            categoria.setNombre(rs.getString("categoria_nombre"));
-            producto.setCategoria(categoria);
+        int catId = rs.getInt("categoria_id");
+        if (rs.wasNull()) {
+            producto.setCategoriaId(0);
+        } else {
+            producto.setCategoriaId(catId);
         }
 
+        try {
+            ResultSetMetaData metaData = rs.getMetaData();
+            boolean found = false;
+            for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                if ("nombre_categoria".equalsIgnoreCase(metaData.getColumnLabel(i))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (found) {
+                producto.setCategoriaNombre(rs.getString("nombre_categoria"));
+            } else {
+                producto.setCategoriaNombre(null);
+            }
+        } catch (SQLException e) {
+            producto.setCategoriaNombre(null);
+        }
         return producto;
     }
 
-    // equals, hashCode y toString
+    public static List<Producto> findByCategoriaId(int categoriaId) throws SQLException {
+        List<Producto> productos = new ArrayList<>();
+        String sql = "SELECT p.*, c.nombre as nombre_categoria FROM Productos p " +
+                "LEFT JOIN Categorias c ON p.categoria_id = c.id WHERE p.categoria_id = ? ORDER BY p.nombre ASC";
+        try (Connection conn = ConnectionBD.getConn();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, categoriaId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    productos.add(fromResultSet(rs));
+                }
+            }
+        }
+        return productos;
+    }
+
+    public static int countByCategoriaId(Connection conn, int categoriaId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Productos WHERE categoria_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, categoriaId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        return nombre + " - " + precio + "€" + (categoriaNombre != null ? " [" + categoriaNombre + "]" : "");
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -248,15 +287,5 @@ public class Producto {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Producto{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", precio=" + precio +
-                ", categoriaId=" + categoriaId +
-                '}';
     }
 }

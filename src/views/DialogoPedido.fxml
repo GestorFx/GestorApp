@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane xmlns="http://javafx.com/javafx/11" xmlns:fx="http://javafx.com/fxml/1"
+          fx:controller="controllers.DialogoPedidoController"
+          hgap="10" vgap="15" styleClass="dialog-pane"
+          stylesheets="@styles/DialogoPedido.css">
+    <padding><Insets top="25" right="25" bottom="25" left="25"/></padding>
+
+    <Label text="Usuario:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <ComboBox fx:id="usuarioComboBox" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="250"/>
+
+    <Label text="Producto:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <ComboBox fx:id="productoComboBox" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="250"/>
+
+    <Label text="Cantidad:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <TextField fx:id="cantidadField" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+    <Label text="Fecha:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <DatePicker fx:id="fechaPicker" GridPane.rowIndex="3" GridPane.columnIndex="1" prefWidth="250"/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="1"
+          GridPane.halignment="RIGHT" style="-fx-padding-top: 20;">
+        <Button text="Guardar" onAction="#handleGuardar" styleClass="action-button"/>
+        <Button text="Cancelar" onAction="#handleCancelar" styleClass="action-button-cancel"/>
+    </HBox>
+
+    <columnConstraints>
+        <ColumnConstraints halignment="RIGHT" minWidth="80.0" prefWidth="100.0"/>
+        <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" prefWidth="250.0"/>
+    </columnConstraints>
+</GridPane>

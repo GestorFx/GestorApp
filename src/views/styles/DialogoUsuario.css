@@ -1,0 +1,76 @@
+* {
+    -neon-blue: #00e6ff;
+    -neon-blue-glow: rgba(0, 230, 255, 0.5);
+    -dark-bg: #050e18;
+    -medium-bg: #0a1a2e;
+    -light-bg: #112240;
+    -text-color: white;
+    -highlight-color: #00b8cc;
+    -error-color: #ff6b6b; /* Un rojo neón suave para errores o cancelaciones */
+}
+
+.dialog-pane {
+    -fx-background-color: -medium-bg;
+    -fx-padding: 25px;
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+    -fx-border-radius: 8px;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 15, 0.2, 0, 0);
+}
+
+.dialog-pane .label {
+    -fx-text-fill: -neon-blue;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.dialog-pane .text-field {
+    -fx-background-color: -light-bg;
+    -fx-text-fill: -text-color;
+    -fx-prompt-text-fill: derive(-text-color, -40%);
+    -fx-border-color: -neon-blue;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-background-radius: 5px;
+    -fx-padding: 8px 10px;
+    -fx-font-size: 13px;
+    -fx-highlight-fill: -highlight-color;
+    -fx-pref-width: 250px; /* MODIFICADO: Ancho preferido para consistencia */
+}
+
+.dialog-pane .text-field:focused {
+    -fx-border-color: -highlight-color;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 8, 0.3, 0, 0);
+}
+
+.dialog-pane .button { /* Estilo base para botones si no tienen clase específica */
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-background-radius: 5;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+
+.dialog-pane .action-button {
+    -fx-background-color: -neon-blue;
+    -fx-text-fill: -dark-bg;
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 5, 0.3, 0, 0);
+}
+
+.dialog-pane .action-button:hover {
+    -fx-background-color: derive(-neon-blue, -15%);
+    -fx-effect: dropshadow(gaussian, -neon-blue-glow, 10, 0.5, 0, 0);
+}
+
+.dialog-pane .action-button-cancel {
+    -fx-background-color: -light-bg;
+    -fx-text-fill: -text-color;
+    -fx-border-color: -text-color;
+    -fx-border-width: 1px;
+}
+
+.dialog-pane .action-button-cancel:hover {
+    -fx-background-color: derive(-light-bg, -10%);
+    -fx-border-color: -neon-blue;
+    -fx-text-fill: -neon-blue;
+}

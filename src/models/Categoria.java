@@ -9,81 +9,56 @@ import services.ConnectionBD;
 public class Categoria {
     private int id;
     private String nombre;
-    private List<Producto> productos; // Relación con productos
 
-    // Constructores
-    public Categoria() {
-        this.productos = new ArrayList<>();
+    public Categoria() {}
+
+    public Categoria(int id, String nombre) {
+        this.id = id;
+        setNombre(nombre);
     }
 
     public Categoria(String nombre) {
-        this();
-        this.nombre = nombre;
+        setNombre(nombre);
     }
 
-    // Getters y Setters con validación
-    public int getId() {
-        return id;
-    }
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public void setId(int id) {
-        if (id < 0) {
-            throw new IllegalArgumentException("ID no puede ser negativo");
-        }
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
+    public String getNombre() { return nombre; }
     public void setNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("Nombre no puede estar vacío");
+            throw new IllegalArgumentException("El nombre de la categoría no puede estar vacío.");
         }
         this.nombre = nombre.trim();
     }
 
-    public List<Producto> getProductos() throws SQLException {
-        if (productos == null && id > 0) {
-            this.productos = Producto.findByCategoriaId(id);
-        }
-        return new ArrayList<>(productos);
-    }
-
-    public void setProductos(List<Producto> productos) {
-        this.productos = (productos != null) ? new ArrayList<>(productos) : new ArrayList<>();
-    }
-
-    // Métodos de persistencia
     public void save() throws SQLException {
-        Connection conn = ConnectionBD.getConn();
-        conn.setAutoCommit(false);
+        Connection conn = null;
+        boolean originalAutoCommit = true;
         try {
-            save(conn);
+            conn = ConnectionBD.getConn();
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+
+            if (this.id == 0) {
+                insert(conn);
+            } else {
+                update(conn);
+            }
             conn.commit();
         } catch (SQLException e) {
-            conn.rollback();
+            if (conn != null) conn.rollback();
             throw e;
         } finally {
-            conn.setAutoCommit(true);
-        }
-    }
-
-    public void save(Connection conn) throws SQLException {
-        if (id == 0) {
-            insert(conn);
-        } else {
-            update(conn);
+            if (conn != null) conn.setAutoCommit(originalAutoCommit);
         }
     }
 
     private void insert(Connection conn) throws SQLException {
         String sql = "INSERT INTO Categorias (nombre) VALUES (?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.setString(1, nombre);
+            stmt.setString(1, this.nombre);
             stmt.executeUpdate();
-
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     this.id = rs.getInt(1);
@@ -95,60 +70,48 @@ public class Categoria {
     private void update(Connection conn) throws SQLException {
         String sql = "UPDATE Categorias SET nombre = ? WHERE id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, nombre);
-            stmt.setInt(2, id);
+            stmt.setString(1, this.nombre);
+            stmt.setInt(2, this.id);
             stmt.executeUpdate();
         }
     }
 
     public void delete() throws SQLException {
-        Connection conn = ConnectionBD.getConn();
-        conn.setAutoCommit(false);
+        Connection conn = null;
+        boolean originalAutoCommit = true;
+        if (this.id == 0) throw new IllegalStateException("No se puede borrar una categoría sin ID.");
+
         try {
-            delete(conn);
+            conn = ConnectionBD.getConn();
+            originalAutoCommit = conn.getAutoCommit();
+            conn.setAutoCommit(false);
+
+            if (Producto.countByCategoriaId(conn, this.id) > 0) {
+                throw new SQLException("No se puede borrar la categoría porque tiene productos asociados.");
+            }
+
+            String sql = "DELETE FROM Categorias WHERE id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, this.id);
+                stmt.executeUpdate();
+            }
             conn.commit();
         } catch (SQLException e) {
-            conn.rollback();
+            if (conn != null) conn.rollback();
             throw e;
         } finally {
-            conn.setAutoCommit(true);
+            if (conn != null) conn.setAutoCommit(originalAutoCommit);
         }
     }
 
-    public void delete(Connection conn) throws SQLException {
-        // Verificar si hay productos asociados
-        if (tieneProductosAsociados(conn)) {
-            throw new SQLException("No se puede eliminar la categoría porque tiene productos asociados");
-        }
-
-        String sql = "DELETE FROM Categorias WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
-        }
-    }
-
-    private boolean tieneProductosAsociados(Connection conn) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM Productos WHERE categoria_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        }
-        return false;
-    }
-
-    // Métodos estáticos de consulta
     public static Categoria findById(int id) throws SQLException {
         String sql = "SELECT * FROM Categorias WHERE id = ?";
-        try (PreparedStatement stmt = ConnectionBD.getConn().prepareStatement(sql)) {
+        try (Connection conn = ConnectionBD.getConn();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return fromResultSet(rs);
+                    return new Categoria(rs.getInt("id"), rs.getString("nombre"));
                 }
             }
         }
@@ -157,38 +120,17 @@ public class Categoria {
 
     public static List<Categoria> findAll() throws SQLException {
         List<Categoria> categorias = new ArrayList<>();
-        String sql = "SELECT * FROM Categorias";
-        try (Statement stmt = ConnectionBD.getConn().createStatement();
+        String sql = "SELECT * FROM Categorias ORDER BY nombre";
+        try (Connection conn = ConnectionBD.getConn();
+             Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                categorias.add(fromResultSet(rs));
+                categorias.add(new Categoria(rs.getInt("id"), rs.getString("nombre")));
             }
         }
         return categorias;
     }
 
-    public static List<Categoria> findByNombre(String nombreBusqueda) throws SQLException {
-        List<Categoria> categorias = new ArrayList<>();
-        String sql = "SELECT * FROM Categorias WHERE nombre LIKE ?";
-        try (PreparedStatement stmt = ConnectionBD.getConn().prepareStatement(sql)) {
-            stmt.setString(1, "%" + nombreBusqueda + "%");
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    categorias.add(fromResultSet(rs));
-                }
-            }
-        }
-        return categorias;
-    }
-
-    private static Categoria fromResultSet(ResultSet rs) throws SQLException {
-        Categoria categoria = new Categoria();
-        categoria.setId(rs.getInt("id"));
-        categoria.setNombre(rs.getString("nombre"));
-        return categoria;
-    }
-
-    // equals, hashCode y toString
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
